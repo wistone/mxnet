@@ -5,6 +5,7 @@ import numpy as np
 import sys, os
 from mxnet.io import DataIter
 from PIL import Image
+from random import shuffle
 
 class FileIter(DataIter):
     """FileIter object in fcn-xs example. Taking a file list file to get dataiter.
@@ -64,8 +65,8 @@ class FileIter(DataIter):
             return list(data.items()), list(label.items())
 
     def _read_img(self, img_name, label_name):
-        img = Image.open(os.path.join(self.root_dir, img_name))
-        label = Image.open(os.path.join(self.root_dir, label_name))
+        img = Image.open(self.root_dir + img_name)
+        label = Image.open(self.root_dir + label_name)
         assert img.size == label.size
         img = np.array(img, dtype=np.float32)  # (h, w, c)
         label = np.array(label)  # (h, w)
@@ -108,7 +109,7 @@ class FileIter(DataIter):
         label = np.pad(label, pad_width=((pad_h_start, pad_h_end), (pad_w_start, pad_w_end)), mode='constant', constant_values=0)
 
         # mirror
-        if mirror:
+        if self.mirror:
             if np.random.randint(0,2):
                 img = np.fliplr(img)
                 label = np.fliplr(label)

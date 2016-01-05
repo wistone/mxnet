@@ -1,13 +1,13 @@
 # pylint: skip-file
+import find_mxnet
+import mxnet as mx
 import sys, os
 import argparse
-import mxnet as mx
 import numpy as np
 import logging
-import symbol_fcnxs
+import symbol_largeFOV
 import init_fcnxs
 from data import FileIter
-from solver import Solver
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -25,9 +25,9 @@ def main():
         root_dir             = "/data2/jpshi/VOC2012/",
         flist_name           = "/data2/jpshi/VOCdevkit/VOC2012/list/train_aug.txt",
         cut_off_size         = 321,
-        batch_size           = 30,
+        batch_size           = 2,
         mirror               = 1,
-        shuffle              = 1,
+        shuffle              = 0,
         rgb_mean             = (123.68, 116.779, 103.939),
         )
 
@@ -52,7 +52,7 @@ def main():
         aux_params          = fcnxs_auxs)
 
     model.fit(
-        train_data          = train_dataiter,
+        X                   = train_dataiter,
         eval_data           = val_dataiter,
         batch_end_callback  = mx.callback.Speedometer(1, 10),
         epoch_end_callback  = mx.callback.do_checkpoint(fcnxs_model_prefix))

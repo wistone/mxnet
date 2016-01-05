@@ -57,7 +57,7 @@ def vgg16_score(input, numclass, workspace_default=1024):
                 workspace=workspace_default, name="conv5_3")
     relu5_3 = mx.symbol.Activation(data=conv5_3, act_type="relu", name="relu5_3")
     pool5 = mx.symbol.Pooling(data=relu5_3, pool_type="max", kernel=(3, 3), stride=(1,1), pad=(1,1), name="pool5")
-    pool5a = mx.symbol.Pooling(data=pool5, pool_type="ave", kernel=(3, 3), stride=(1,1), pad=(1,1), name="pool5a")
+    pool5a = mx.symbol.Pooling(data=pool5, pool_type="avg", kernel=(3, 3), stride=(1,1), pad=(1,1), name="pool5a")
     # group 6
     fc6 = mx.symbol.Convolution(data=pool5a, kernel=(3, 3), num_filter=1024, pad=(12,12), dilate=(12,12),
                 workspace=workspace_default, name="fc6")
