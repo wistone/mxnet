@@ -40,16 +40,16 @@ def main():
         shuffle              = 0,
         rgb_mean             = (123.68, 116.779, 103.939),
         )
-
-    model = mx.model.FeedForward(
+    model = Solver(
         ctx                 = mx.gpu(0),
         symbol              = largeFOV,
+        begin_epoch         = 0,
         num_epoch           = 6,
-        learning_rate       = 0.001,
-        wd                  = 0.0005,
-        momentum            = 0.9,
         arg_params          = fcnxs_args,
-        aux_params          = fcnxs_auxs)
+        aux_params          = fcnxs_auxs,
+        learning_rate       = 0.001,
+        momentum            = 0.9,
+        wd                  = 0.0005)
 
     model.fit(
         X                   = train_dataiter,
