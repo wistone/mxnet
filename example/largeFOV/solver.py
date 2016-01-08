@@ -53,6 +53,21 @@ class Solver(object):
         self.optimizer = opt.create(self.optimizer, rescale_grad=(1.0/train_data.get_batch_size()), **(self.kwargs))
         self.updater = get_updater(self.optimizer)
         eval_metric = metric.create(eval_metric)
+
+        label_shape = data[label_name].shape
+        self.arg_params[data_name] = mx.nd.array(data[data_name], self.ctx)
+        self.arg_params[label_name] = mx.nd.array(data[label_name].reshape(label_shape[0], \
+            label_shape[1]*label_shape[2]), self.ctx)
+        output_names = self.symbol.list_outputs()
+        self.exector = self.symbol.bind(self.ctx, self.arg_params,
+                        args_grad=self.grad_params,
+                        grad_req=grad_req,
+                        aux_states=self.aux_params)
+        assert len(self.symbol.list_arguments()) == len(self.exector.grad_arrays)
+        update_dict = {name: nd for name, nd in zip(self.symbol.list_arguments(), \
+            self.exector.grad_arrays) if nd}
+        output_dict = {}
+        output_buff = {}
         # begin training
         for epoch in range(self.begin_epoch, self.num_epoch):
             nbatch = 0
@@ -60,24 +75,10 @@ class Solver(object):
             eval_metric.reset()
             for data in train_data:
                 nbatch += 1
-                label_shape = data[label_name].shape
-                self.arg_params[data_name] = mx.nd.array(data[data_name], self.ctx)
-                self.arg_params[label_name] = mx.nd.array(data[label_name].reshape(label_shape[0], \
-                    label_shape[1]*label_shape[2]), self.ctx)
-                output_names = self.symbol.list_outputs()
-                self.exector = self.symbol.bind(self.ctx, self.arg_params,
-                                args_grad=self.grad_params,
-                                grad_req=grad_req,
-                                aux_states=self.aux_params)
-                assert len(self.symbol.list_arguments()) == len(self.exector.grad_arrays)
-                update_dict = {name: nd for name, nd in zip(self.symbol.list_arguments(), \
-                    self.exector.grad_arrays) if nd}
-                output_dict = {}
-                output_buff = {}
+                self.exector.forward(is_train=True)                
                 for key, arr in zip(self.symbol.list_outputs(), self.exector.outputs):
                     output_dict[key] = arr
                     output_buff[key] = mx.nd.empty(arr.shape, ctx=mx.cpu())
-                self.exector.forward(is_train=True)
                 for key in output_dict:
                     output_dict[key].copyto(output_buff[key])
                 self.exector.backward()
