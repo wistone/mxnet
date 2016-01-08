@@ -28,7 +28,7 @@ class FileIter(DataIter):
     """
     def __init__(self, root_dir, flist_name,
                  rgb_mean = (117, 117, 117),
-                 cut_off_size = None,
+                 cut_off_size = 321,
                  batch_size = 10,
                  mirror = 0,
                  shuffle = 0,
@@ -52,10 +52,13 @@ class FileIter(DataIter):
 
     def _read(self):
         """get two list, each list contains two elements: name and nd.array value"""
-        data_img_name, label_img_name = self.f.readline().strip('\n').split(" ")
         data = {}
         label = {}
-        data[self.data_name], label[self.label_name] = self._read_img(data_img_name, label_img_name)
+        data[self.data_name] = np.zeros((self.batch_size, 3, self.cut_off_size, self.cut_off_size))
+        label[self.label_name] = np.zeros((self.batch_size, self.cut_off_size, self.cut_off_size))
+        for i in range(self.batch_size):
+            data_img_name, label_img_name = self.f.readline().strip('\n').split(" ")
+            data[self.data_name][i], label[self.label_name][i] = self._read_img(data_img_name, label_img_name)             
         return list(data.items()), list(label.items())
 
     def _read_img(self, img_name, label_name):
@@ -130,8 +133,8 @@ class FileIter(DataIter):
         self.f = open(self.flist_name, 'r')
 
     def iter_next(self):
-        self.cursor += 1
-        if(self.cursor < self.num_data-1):
+        self.cursor += self.batch_size
+        if(self.cursor < self.num_data - self.batch_size):
             return True
         else:
             return False

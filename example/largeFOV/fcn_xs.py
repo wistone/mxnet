@@ -25,7 +25,7 @@ def main():
         root_dir             = "/data2/jpshi/VOC2012/",
         flist_name           = "/data2/jpshi/VOCdevkit/VOC2012/list/train_aug.txt",
         cut_off_size         = 321,
-        batch_size           = 10,
+        batch_size           = 2,
         mirror               = 1,
         shuffle              = 0,
         rgb_mean             = (123.68, 116.779, 103.939),
